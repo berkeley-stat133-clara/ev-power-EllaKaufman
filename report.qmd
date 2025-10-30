@@ -100,3 +100,5 @@ ggplot(state_and_RevEV, aes(long, lat, group = Total_Renewable_Energy_Use, fill 
 ```
 
 ## Analysis
+#EV registration is highest in California. Unfortunately I was only able to conclude this from the map. 
+#I ran out of time to correctly plot renewable energy use and draw conclusions about my research question. 
