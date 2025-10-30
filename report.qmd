@@ -26,6 +26,7 @@ library(maps)
 ```{r}
 #clean ev registrations table
 ev_reg_2023 <- read.csv("/Users/ellakaufman/Desktop/Classes/133/ev-power-EllaKaufman/data/ev-registrations-by-state-2023.csv")
+
 ev_reg_2023 <- ev_reg_2023[-1,] #remove empty first row
 ev_reg_2023 <- ev_reg_2023[-1,] 
 
@@ -42,7 +43,9 @@ View(ev_reg_2023)
 ev_reg_2023 <- ev_reg_2023 |> mutate(EV_Count = as.numeric(EV_Count))
 
 #clean total renewable energy use table 
+
 tot_ren_use23 <- read.csv("/Users/ellakaufman/Desktop/Classes/133/ev-power-EllaKaufman/data/total-use-2023.csv")
+
 tot_ren_use23 <- tot_ren_use23 |> slice_tail() #select only renewable energy row 
 tot_ren_use23 <- tot_ren_use23[,-1] #remove first column
 View(tot_ren_use23)
