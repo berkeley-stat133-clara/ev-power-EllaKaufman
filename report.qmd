@@ -25,7 +25,7 @@ library(maps)
 
 ```{r}
 #clean ev registrations table
-ev_reg_2023 <- read.csv("ev-registrations-by-state-2023.csv")
+ev_reg_2023 <- read.csv("/Users/ellakaufman/Desktop/Classes/133/ev-power-EllaKaufman/data/ev-registrations-by-state-2023.csv")
 ev_reg_2023 <- ev_reg_2023[-1,] #remove empty first row
 ev_reg_2023 <- ev_reg_2023[-1,] 
 
@@ -42,7 +42,7 @@ View(ev_reg_2023)
 ev_reg_2023 <- ev_reg_2023 |> mutate(EV_Count = as.numeric(EV_Count))
 
 #clean total renewable energy use table 
-tot_ren_use23 <- read.csv("total-use-2023.csv")
+tot_ren_use23 <- read.csv("/Users/ellakaufman/Desktop/Classes/133/ev-power-EllaKaufman/data/total-use-2023.csv")
 tot_ren_use23 <- tot_ren_use23 |> slice_tail() #select only renewable energy row 
 tot_ren_use23 <- tot_ren_use23[,-1] #remove first column
 View(tot_ren_use23)
@@ -101,5 +101,4 @@ ggplot(state_and_RevEV, aes(long, lat, group = Total_Renewable_Energy_Use, fill 
 
 ## Analysis
 #EV registration is highest in California. Unfortunately I was only able to conclude this from the map. 
-#I ran out of time to correctly plot renewable energy use and draw conclusions about my research question. 
-#I had trouble rendering, so I wasn't able to generate a pdf. 
+#I ran out of time to correctly plot renewable energy use and draw conclusions about my research question.
