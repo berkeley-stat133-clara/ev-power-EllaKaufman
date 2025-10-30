@@ -3,32 +3,103 @@ title: "EV Power - Lab 4 Project Report"
 format: typst
 ---
 
-# Example Solution 1
+# Renewable Energy Use & EV Registrations Across US States
+
+I am broadly exploring if the electricity used to charge EV vehicles comes from clean sources. As a sub-investigation, I want to learn how clean energy and EV registrations are distributed across the US.
+
+## I am investigating whether states with higher renewable energy usage have more EV registrations.
 
 ## **Part 0: libraries**
 
 ```{r}
-
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(maps)
 ```
 
-## **Part 1:** **Defining Research Question**
-
-Chosen Question:
-
-## **Part 2: Data Preparation and Cleaning**
+## **Part 2: Data**
 
 ```{r}
+#clean ev registrations table
+ev_reg_2023 <- read.csv("ev-registrations-by-state-2023.csv")
+ev_reg_2023 <- ev_reg_2023[-1,] #remove empty first row
+ev_reg_2023 <- ev_reg_2023[-1,] 
 
+#rename columns
+names(ev_reg_2023)
+ev_reg_2023 <- ev_reg_2023 |> rename(State = electric.vehicle.registrations_by_state..2023., EV_Count =X)
+View(ev_reg_2023)
+
+#remove extra characters from Count-EVs column 
+ev_reg_2023 <- ev_reg_2023 |> mutate(EV_Count= str_remove_all(string = EV_Count, pattern = "#|~|EVs") )
+View(ev_reg_2023)
+
+#convert Count-EVs column to class numeric 
+ev_reg_2023 <- ev_reg_2023 |> mutate(EV_Count = as.numeric(EV_Count))
+
+#clean total renewable energy use table 
+tot_ren_use23 <- read.csv("total-use-2023.csv")
+tot_ren_use23 <- tot_ren_use23 |> slice_tail() #select only renewable energy row 
+tot_ren_use23 <- tot_ren_use23[,-1] #remove first column
+View(tot_ren_use23)
+tot_ren_use23 <- tot_ren_use23 |> mutate(across(-1, as.numeric)) #convert all state columns to dbl (same as count-EV), although not certain I needed to do that
+#got help finding across function from Gemini
 ```
 
-## **Part 3: Joining / Pivoting Datasets for Analysis**
+## **Part 3: Methods**
 
 ```{r}
+#pivot tot_ren_use23 state columns to one state column and one total renewable energy column
+tot_ren_use23 <- tot_ren_use23 |> pivot_longer(cols=everything(),names_to = "State", values_to = "Total_Renewable_Energy_Use")
 
+#tot_ren_use23 State column uses abbreviations, ev_reg_2023 State column uses the full state name. With the help of Gemini, I made a reference table to use for joining
+state_ref <- data.frame(State_Full = state.name, State_Ab = state.abb)
+View(state_ref)
+state_ref <- rbind(state_ref, data.frame(State_Full = "District of Columbia", State_Ab= "DC"))
+
+#join the reference table and tot_ren_use23 by state abbreviation
+jointable1<- full_join(state_ref, tot_ren_use23, join_by(State_Ab==State))
+View(jointable1)
+
+#join jointable1 and ev_reg_2023 by full state name 
+Ren_use_EV_reg <- full_join(jointable1,ev_reg_2023, join_by(State_Full==State))
+View(Ren_use_EV_reg)
+
+Ren_use_EV_reg <- Ren_use_EV_reg[,-2] #delete state abbreviation column
+
+#create object for base map data
+us_map <- map_data("state")
+View(us_map)
+
+#standardize state columns 
+us_map <- us_map|> mutate(State = toupper(region))
+us_map <- us_map[,-6]
+us_map <- us_map[,-5]
+Ren_use_EV_reg <- Ren_use_EV_reg|> mutate(State = toupper(State_Full))
+Ren_use_EV_reg <- Ren_use_EV_reg[,-1]
+
+#join us_map and Ren_use_EV_reg 
+state_and_RevEV <- full_join(us_map, Ren_use_EV_reg, join_by(State==State))
+View(state_and_RevEV)
+head(state_and_RevEV)
 ```
 
 ## **Part 4: Mapping Visualization**
 
 ```{r}
-
+ggplot(state_and_RevEV, aes(long, lat, group = Total_Renewable_Energy_Use, fill = EV_Count)) +
+  geom_polygon(color = "white") +
+  coord_fixed(1.3) +
+  theme_minimal() +
+  scale_fill_viridis_c() +
+  labs(title = "Renewable Energy Use and EV Registrations Across US States")
 ```
+
+## Analysis
+#EV registration is highest in California. Unfortunately I was only able to conclude this from the map. 
+#I ran out of time to correctly plot renewable energy use and draw conclusions about my research question. 
+#I had trouble rendering, so I wasn't able to generate a pdf. 
